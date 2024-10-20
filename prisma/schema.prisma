@@ -1,0 +1,48 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  password      String
+  role          Role     @default(CLIENT)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  appointments  Appointment[]
+  doctorAppointments Appointment[] @relation("DoctorAppointments")
+}
+
+model Appointment {
+  id        String   @id @default(cuid())
+  date      DateTime
+  status    AppointmentStatus @default(PENDING)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  doctorId  String?
+  doctor    User?    @relation("DoctorAppointments", fields: [doctorId], references: [id])
+}
+
+enum Role {
+  ADMIN
+  DOCTOR
+  TRAVEL_AGENT
+  CLIENT
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
